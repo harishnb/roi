@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-Piracy ROI Calculator</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            height: 4px;
+            background-color: var(--primary-color);
+            z-index: 2;
+            transition: width 0.3s ease;
+        }
+        
+        .step {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+            z-index: 3;
+        }
+        
+        .step.active {
+            background-color: var(--primary-color);
+        }
+        
+        .step.completed {
+            background-color: var(--success-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group input {
+            padding-left: 30px;
+        }
+        
+        .input-group-prepend {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            color: #777;
+        }
+        
+        .input-group-append {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: #777;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 600;
+        }
+        
+        .result-value {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .positive {
+            color: var(--success-color);
+        }
+        
+        .negative {
+            color: var(--danger-color);
+        }
+        
+        .neutral {
+            color: var(--warning-color);
+        }
+        
+        .summary-card {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 30px 0;
+        }
+        
+        .help-text {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+        
+        .highlight {
+            font-size: 24px;
+            font-weight: 700;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .roi-positive {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+
+        .roi-negative {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+        
+        .roi-neutral {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: #d35400;
+        }
+
+        .recommendation {
+            padding: 20px;
+            border-left: 4px solid var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Anti-Piracy ROI Calculator</h1>
+            <p>Calculate the potential return on investment for your content security solutions</p>
+        </header>
+        
+        <div class="card">
+            <div class="progress-bar">
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
+                <div class="step" id="step4">4</div>
+            </div>
+            
+            <!-- Page 1: Revenue Information -->
+            <div class="page active" id="page1">
+                <h2>Revenue Information</h2>
+                <div class="form-group">
+                    <label for="totalRevenue">Total Revenue (per year)</label>
+                    <div class="input-group">
+                        <span class="input-group-prepend">$</span>
+                        <input type="number" id="totalRevenue" min="0" step="1000" value="1000000">
+                    </div>
+                    <p class="help-text">Enter your annual revenue from content before any anti-piracy measures.</p>
+                </div>
+                <div class="form-group">
+                    <label for="revenuePerStream">Average Revenue per Stream/User</label>
+                    <div class="input-group">
+                        <span class="input-group-prepend">$</span>
+                        <input type="number" id="revenuePerStream" min="0" step="0.01" value="2.50">
+                    </div>
+                    <p class="help-text">How much revenue do you generate per legitimate stream or user?</p>
+                </div>
+                <div class="buttons">
+                    <div></div> <!-- Empty div for spacing -->
+                    <button class="btn" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+            
+            <!-- Page 2: Piracy & Cost Information -->
+            <div class="page" id="page2">
+                <h2>Piracy & Anti-Piracy Information</h2>
+                <div class="form-group">
+                    <label for="piratedViews">Estimated % of Pirated Views</label>
+                    <div class="input-group">
+                        <input type="number" id="piratedViews" min="0" max="100" step="1" value="30">
+                        <span class="input-group-append">%</span>
+                    </div>
+                    <p class="help-text">What percentage of total potential views are being accessed through piracy?</p>
+                </div>
+                <div class="form-group">
+                    <label for="conversionRate">Conversion Rate from Pirated to Paid</label>
+                    <div class="input-group">
+                        <input type="number" id="conversionRate" min="0" max="100" step="1" value="25">
+                        <span class="input-group-append">%</span>
+                    </div>
+                    <p class="help-text">What percentage of pirates would convert to paying customers if piracy wasn't an option?</p>
+                </div>
+                <div class="form-group">
+                    <label for="antiPiracyCost">Cost of Anti-Piracy Solution</label>
+                    <div class="input-group">
+                        <span class="input-group-prepend">$</span>
+                        <input type="number" id="antiPiracyCost" min="0" step="1000" value="40000">
+                    </div>
+                    <p class="help-text">What is the total annual cost of the anti-piracy solution you're considering?</p>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-secondary" onclick="previousPage()">Previous</button>
+                    <button class="btn" onclick="calculateROI()">Calculate ROI</button>
+                </div>
+            </div>
+            
+            <!-- Page 3: Basic Results -->
+            <div class="page" id="page3">
+                <h2>Financial Impact Analysis</h2>
+                <div class="result-item">
+                    <span class="result-label">Total Revenue (per year)</span>
+                    <span class="result-value" id="result-totalRevenue">$1,000,000</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Estimated Revenue Lost Due to Piracy</span>
+                    <span class="result-value negative" id="result-revenueLost">$300,000</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Potential Revenue Recovery</span>
+                    <span class="result-value positive" id="result-revenueRecovery">$30,000</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Cost of Anti-Piracy Solution</span>
+                    <span class="result-value negative" id="result-antiPiracyCost">$50,000</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Net Benefit/Loss</span>
+                    <span class="result-value" id="result-netBenefit">-$20,000</span>
+                </div>
+                
+                <div class="highlight" id="roi-highlight">
+                    Return on Investment (ROI): <span id="result-roi">-40%</span>
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-secondary" onclick="previousPage()">Previous</button>
+                    <button class="btn" onclick="nextPage()">Detailed Analysis</button>
+                </div>
+            </div>
+            
+            <!-- Page 4: Advanced Results -->
+            <div class="page" id="page4">
+                <h2>Break-Even Analysis & Recommendations</h2>
+                
+                <div class="result-item">
+                    <span class="result-label">Break-even (streams needed)</span>
+                    <span class="result-value" id="result-breakEven">200,000 streams</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Payback Period</span>
+                    <span class="result-value" id="result-payback">20 months</span>
+                </div>
+                
+                <div class="summary-card">
+                    <h3>Recommendation Summary</h3>
+                    <p id="recommendation">Based on your inputs, this anti-piracy solution has a negative ROI (-40%). You would need to recover at least 200,000 streams from pirates to break even. Consider negotiating a lower cost for the solution or finding alternatives with better ROI.</p>
+                </div>
+                
+                <div class="recommendation" id="advanced-recommendation">
+                    <h3>Optimization Options:</h3>
+                    <ul>
+                        <li>Focus anti-piracy efforts on <span id="high-piracy-regions">top 3-5 regions</span> where your content is most heavily pirated to maximize ROI.</li>
+                        <li>Prioritize countries with both high piracy rates and significant viewership of your content.</li>
+                        <li>A conversion rate of <span id="target-conversion">16.7%</span> would make this solution profitable - target regions where users are more likely to convert.</li>
+                        <li>Consider implementing region-specific anti-piracy strategies based on local piracy patterns and consumption habits.</li>
+                    </ul>
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-secondary" onclick="previousPage()">Previous</button>
+                    <button class="btn" onclick="resetCalculator()">Start Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current page tracker
+        let currentPage = 1;
+        
+        // Update progress bar based on current page
+        function updateProgressBar() {
+            const totalPages = 4;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const step = document.getElementById(`step${i}`);
+                
+                if (i < currentPage) {
+                    step.classList.remove('active');
+                    step.classList.add('completed');
+                } else if (i === currentPage) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active');
+                    step.classList.remove('completed');
+                }
+            }
+            
+            // Update progress bar fill
+            const progressBar = document.querySelector('.progress-bar');
+            const progressWidth = ((currentPage - 1) / (totalPages - 1)) * 100;
+            progressBar.style.setProperty('--progress', `${progressWidth}%`);
+        }
+        
+        // Navigate to next page
+        function nextPage() {
+            if (currentPage < 4) {
+                document.getElementById(`page${currentPage}`).classList.remove('active');
+                currentPage++;
+                document.getElementById(`page${currentPage}`).classList.add('active');
+                updateProgressBar();
+            }
+        }
+        
+        // Navigate to previous page
+        function previousPage() {
+            if (currentPage > 1) {
+                document.getElementById(`page${currentPage}`).classList.remove('active');
+                currentPage--;
+                document.getElementById(`page${currentPage}`).classList.add('active');
+                updateProgressBar();
+            }
+        }
+        
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: 'USD',
+                maximumFractionDigits: 0 
+            }).format(value);
+        }
+        
+        // Format percentage
+        function formatPercentage(value) {
+            return `${value.toFixed(1)}%`;
+        }
+        
+        // Format numbers with commas
+        function formatNumber(value) {
+            return new Intl.NumberFormat('en-US').format(value);
+        }
+        
+        // Calculate ROI and update results
+        function calculateROI() {
+            // Get input values
+            const totalRevenue = parseFloat(document.getElementById('totalRevenue').value) || 0;
+            const revenuePerStream = parseFloat(document.getElementById('revenuePerStream').value) || 0;
+            const piratedViewsPercent = parseFloat(document.getElementById('piratedViews').value) || 0;
+            const conversionRatePercent = parseFloat(document.getElementById('conversionRate').value) || 0;
+            const antiPiracyCost = parseFloat(document.getElementById('antiPiracyCost').value) || 0;
+            
+            // Convert percentages to decimals
+            const piratedViews = piratedViewsPercent / 100;
+            const conversionRate = conversionRatePercent / 100;
+            
+            // Calculate derived values
+            const totalPotentialRevenue = totalRevenue / (1 - piratedViews * conversionRate);
+            const revenueLost = totalPotentialRevenue * piratedViews;
+            const revenueRecovery = revenueLost * conversionRate;
+            const netBenefit = revenueRecovery - antiPiracyCost;
+            const roi = (revenueRecovery - antiPiracyCost) / antiPiracyCost * 100;
+            
+            // Calculate break-even metrics
+            const streamsNeeded = antiPiracyCost / revenuePerStream;
+            const paybackMonths = antiPiracyCost / (revenueRecovery / 12);
+            
+            // Calculate target values for recommendations
+            const targetConversion = (antiPiracyCost / revenueLost * 100).toFixed(1);
+            
+            // Update basic results
+            document.getElementById('result-totalRevenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('result-revenueLost').textContent = formatCurrency(revenueLost);
+            document.getElementById('result-revenueRecovery').textContent = formatCurrency(revenueRecovery);
+            document.getElementById('result-antiPiracyCost').textContent = formatCurrency(antiPiracyCost);
+            document.getElementById('result-netBenefit').textContent = formatCurrency(netBenefit);
+            document.getElementById('result-roi').textContent = formatPercentage(roi);
+            
+            // Update advanced results
+            document.getElementById('result-breakEven').textContent = `${formatNumber(Math.ceil(streamsNeeded))} streams`;
+            document.getElementById('result-payback').textContent = `${Math.ceil(paybackMonths)} months`;
+            document.getElementById('target-conversion').textContent = `${targetConversion}%`;
+            
+            // Update ROI highlight styling based on value
+            const roiHighlight = document.getElementById('roi-highlight');
+            if (roi >= 20) {
+                roiHighlight.className = 'highlight roi-positive';
+            } else if (roi < 0) {
+                roiHighlight.className = 'highlight roi-negative';
+            } else {
+                roiHighlight.className = 'highlight roi-neutral';
+            }
+            
+            // Update recommendation text
+            let recommendationText = '';
+            if (roi >= 100) {
+                recommendationText = `Based on your inputs, this anti-piracy solution has an excellent ROI (${formatPercentage(roi)}). The investment pays for itself quickly and provides substantial financial benefits. Consider increasing your anti-piracy budget for even greater returns.`;
+            } else if (roi >= 20) {
+                recommendationText = `Based on your inputs, this anti-piracy solution has a positive ROI (${formatPercentage(roi)}). The investment should pay for itself in ${Math.ceil(paybackMonths)} months. This appears to be a sound business decision.`;
+            } else if (roi >= 0) {
+                recommendationText = `Based on your inputs, this anti-piracy solution has a minimal positive ROI (${formatPercentage(roi)}). Consider negotiating a lower cost or finding ways to increase the conversion rate from pirated to paid content.`;
+            } else {
+                recommendationText = `Based on your inputs, this anti-piracy solution has a negative ROI (${formatPercentage(roi)}). You would need to recover at least ${formatNumber(Math.ceil(streamsNeeded))} streams from pirates to break even. Consider negotiating a lower cost for the solution or finding alternatives with better ROI.`;
+            }
+            document.getElementById('recommendation').textContent = recommendationText;
+            
+            // Update result-netBenefit styling
+            const netBenefitElement = document.getElementById('result-netBenefit');
+            if (netBenefit >= 0) {
+                netBenefitElement.className = 'result-value positive';
+            } else {
+                netBenefitElement.className = 'result-value negative';
+            }
+            
+            // Move to next page
+            nextPage();
+        }
+        
+        // Reset calculator
+        function resetCalculator() {
+            // Reset form values to defaults
+            document.getElementById('totalRevenue').value = 1000000;
+            document.getElementById('revenuePerStream').value = 2.50;
+            document.getElementById('piratedViews').value = 30;
+            document.getElementById('conversionRate').value = 25;
+            document.getElementById('antiPiracyCost').value = 40000;
+            
+            // Navigate to first page
+            document.getElementById(`page${currentPage}`).classList.remove('active');
+            currentPage = 1;
+            document.getElementById(`page${currentPage}`).classList.add('active');
+            updateProgressBar();
+        }
+        
+        // Initialize progress bar on load
+        document.addEventListener('DOMContentLoaded', updateProgressBar);
+    </script>
+</body>
+</html>
